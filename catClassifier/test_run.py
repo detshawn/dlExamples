@@ -2,6 +2,8 @@ from testCases_v4a import *
 
 from parameter_utils import *
 from forward_utils import *
+from cost_utils import *
+
 
 # init
 print("")
@@ -44,3 +46,12 @@ print(" AL = " + str(AL))
 print(" Length of caches list = " + str(len(caches)))
 print(" expected AL = " + "[[0.03921668 0.70498921 0.19734387 0.04728177]]")
 print(" expected Len of caches list = " + str(3))
+
+
+# cost
+print("")
+print("--- compute_cost() test::")
+Y, AL = compute_cost_test_case()
+
+print(" cost = " + str(compute_cost(AL, Y)))
+print(" expected cost = " + str(0.2797765635793422))
