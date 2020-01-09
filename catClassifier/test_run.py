@@ -104,3 +104,18 @@ print("--- L_model_backward() test::")
 AL, Y_assess, caches = L_model_backward_test_case()
 grads = L_model_backward(AL, Y_assess, caches)
 print_grads(grads)
+
+
+# update
+print("")
+print("--- update_parameters() test::")
+parameters, grads = update_parameters_test_case()
+parameters = update_parameters(parameters, grads, 0.1)
+
+print (" W1 = "+ str(parameters["W1"]))
+print (" b1 = "+ str(parameters["b1"]))
+print (" W2 = "+ str(parameters["W2"]))
+print (" b2 = "+ str(parameters["b2"]))
+
+
+# predict
