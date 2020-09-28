@@ -6,7 +6,7 @@ from forward_utils import *
 from backward_utils import *
 
 
-def L_model_forward(X, parameters):
+def L_bi_model_forward(X, parameters):
     """
     implements the forward propagation of a neural network
 
@@ -27,10 +27,16 @@ def L_model_forward(X, parameters):
     # iterations
     for l in range(1, L): # L-1 hidden layers with ReLU activation
         A_prev = A
-        A, cache = linear_activation_forward(A_prev,
-                                  parameters["W" + str(l)],
-                                  parameters["b" + str(l)],
-                                  RELU)
+        if l == L-1:
+            A, cache = linear_activation_forward(A_prev,
+                                                 parameters["W" + str(l)],
+                                                 parameters["b" + str(l)],
+                                                 RELU)
+        else:
+            A, cache = linear_activation_forward(A_prev,
+                                      parameters["W" + str(l)],
+                                      parameters["b" + str(l)],
+                                      RESUBLU)
 
         caches.append(cache)
 
@@ -46,7 +52,7 @@ def L_model_forward(X, parameters):
     return AL, caches
 
 
-def L_model_backward(AL, Y, caches):
+def L_bi_model_backward(AL, Y, caches):
     """
     implements the backward propagation for L-layer DNN model
 
@@ -68,7 +74,10 @@ def L_model_backward(AL, Y, caches):
 
     # hidden layers in reversed iteration
     for l in reversed(range(0, L-1)):
-        dA_prev, dW, db = linear_activation_backward(grads["dA" + str(l+1)], caches[l], RELU)
+        if l == L-1:
+            dA_prev, dW, db = linear_activation_backward(grads["dA" + str(l+1)], caches[l], RELU)
+        else:
+            dA_prev, dW, db = linear_activation_backward(grads["dA" + str(l+1)], caches[l], RESUBLU)
         grads["dA" + str(l)] = dA_prev
         grads["dW" + str(l + 1)] = dW
         grads["db" + str(l + 1)] = db
@@ -76,21 +85,23 @@ def L_model_backward(AL, Y, caches):
     return grads
 
 
-def L_layer_model(X, Y, layers_dims,
+def L_bi_layer_model(X, Y, layers_dims,
                   learning_rate=0.0075, num_iterations=3000, print_cost=False, print_plot=False):
 
     np.random.seed(1)
     costs = []
 
     # parameter init
-    parameters = initialize_parameters_deep(layers_dims, seed=1)
+    parameters = initialize_parameters_bi_deep(layers_dims, seed=1)
 
     for i in range(0, num_iterations):
-        AL, caches = L_model_forward(X, parameters)
+        AL, caches = L_bi_model_forward(X, parameters)
+        # print(AL)
+        # print(caches)
 
         cost = compute_cost(AL, Y)
 
-        grads = L_model_backward(AL, Y, caches)
+        grads = L_bi_model_backward(AL, Y, caches)
 
         parameters = update_parameters(parameters, grads, learning_rate)
 
@@ -111,7 +122,7 @@ def L_layer_model(X, Y, layers_dims,
     return parameters
 
 
-def predict(X, Y, parameters):
+def predict_bi(X, Y, parameters):
     """
     implements to predict the classification probability using the input X and trained parameters
 
@@ -124,7 +135,7 @@ def predict(X, Y, parameters):
     """
 
     L = len(parameters) // 2
-    AL, caches = L_model_forward(X, parameters)
+    AL, caches = L_bi_model_forward(X, parameters)
 
     Y_prediction = (AL > 0.5)
     accuracy = 1-np.mean(np.abs(Y_prediction - Y))

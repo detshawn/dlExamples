@@ -54,37 +54,21 @@ def linear_activation_backward(dA, cache, activation):
         dZ = sigmoid_backward(dA, activation_cache["Z"])
         dA_prev, dW, db = linear_backward(dZ, linear_cache)
 
+    elif activation == TANH:
+        dZ = tanh_backward(dA, activation_cache["Z"])
+        dA_prev, dW, db = linear_backward(dZ, linear_cache)
+
+    elif activation == RESUBLU:
+        dZ = resublu_backward(dA, activation_cache["Z"])
+        dA_prev, dW, db = linear_backward(dZ, linear_cache)
+
+    elif activation == HYBRID_RELU_1RESUBLU:
+        dZ = relu_backward(dA[:-1, :], activation_cache["Z"][:-1, :])
+        dZL = resublu_backward(dA[-1, :].reshape(1, dA.shape[1]), activation_cache["Z"][-1, :].reshape(1, activation_cache["Z"].shape[1]))
+        dZ = np.append(dZ, dZL, axis=0)
+        dA_prev, dW, db = linear_backward(dZ, linear_cache)
+
     else:
         exit(1)
 
     return dA_prev, dW, db
-
-
-def L_model_backward(AL, Y, caches):
-    """
-    implements the backward propagation for L-layer DNN model
-
-    :param AL: probability vector, output of the forward propagation
-    :param Y: true value vector in supervised learning
-    :param caches: list of caches for linear & activation processes in forward propagation
-
-    :return grads:
-    """
-
-    grads = {}
-    L = len(caches)
-
-    # output layer with sigmoid function
-    dAL = - (np.divide(Y, AL) - np.divide(1-Y, 1-AL))
-
-    grads["dA" + str(L-1)], grads["dW" + str(L)], grads["db" + str(L)] = \
-        linear_activation_backward(dAL, caches[L-1], SIGMOID)
-
-    # hidden layers in reversed iteration
-    for l in reversed(range(0, L-1)):
-        dA_prev, dW, db = linear_activation_backward(grads["dA" + str(l+1)], caches[l], RELU)
-        grads["dA" + str(l)] = dA_prev
-        grads["dW" + str(l + 1)] = dW
-        grads["db" + str(l + 1)] = db
-
-    return grads

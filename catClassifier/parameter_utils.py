@@ -61,6 +61,36 @@ def initialize_parameters_deep(layer_dims, seed=None):
     return parameters
 
 
+# parameter initialization for general DNN
+def initialize_parameters_bi_deep(layer_dims, seed=None):
+    """
+    implements param initialization for a general deep neural network
+
+    :param layer_dims: a python array of unit size for each layer
+
+    :return parameters:
+    W$l -- weight matrix of the hidden layer (layer_dims[l], layer_dims[l-1])
+    b$l -- bias vector of the hidden layer (layer_dims[l], 1)
+    """
+
+    np.random.seed(seed=seed)
+
+    parameters = {}
+    L = len(layer_dims) - 1  # layer_dims = 1 (input) + L-1 (hidden) + 1 (output)
+
+    for l in range(1, L+1):
+        parameters["W" + str(l)] = np.random.randn(layer_dims[l], layer_dims[l-1])  / layer_dims[l-1]
+        parameters["W" + str(l)] = np.abs(parameters["W" + str(l)])
+        if l != 1:
+            parameters["W" + str(l)][:, -1] = parameters["W" + str(l)][:, -1] * (-1) * np.sqrt(layer_dims[l-1])
+        parameters["b" + str(l)] = np.zeros([layer_dims[l], 1])
+
+        assert (parameters["W" + str(l)].shape == (layer_dims[l], layer_dims[l-1]))
+        assert (parameters["b" + str(l)].shape == (layer_dims[l], 1))
+
+    return parameters
+
+
 # parameter update for general DNN
 def update_parameters(parameters, grads, learning_rate):
     """
@@ -85,3 +115,4 @@ def update_parameters(parameters, grads, learning_rate):
         parameters["b" + str(l)] -= learning_rate * grads["db" + str(l)]
 
     return parameters
+

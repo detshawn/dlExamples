@@ -2,12 +2,16 @@ import numpy as np
 import h5py
 
 
-def load_data():
-    train_dataset = h5py.File('datasets/train_catvnoncat.h5', "r")
+def load_data(name):
+    dir_path = 'datasets/'
+    train_filename = 'train_' + name + '.h5'
+    train_dataset = h5py.File(dir_path+train_filename, "r")
+    print(train_dataset.items())
     train_set_x_orig = np.array(train_dataset["train_set_x"][:])  # your train set features
     train_set_y_orig = np.array(train_dataset["train_set_y"][:])  # your train set labels
 
-    test_dataset = h5py.File('datasets/test_catvnoncat.h5', "r")
+    test_filename = 'test_' + name + '.h5'
+    test_dataset = h5py.File(dir_path+test_filename, "r")
     test_set_x_orig = np.array(test_dataset["test_set_x"][:])  # your test set features
     test_set_y_orig = np.array(test_dataset["test_set_y"][:])  # your test set labels
 
