@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from dnn_utils_v2 import *
 from parameter_utils import *
 from forward_utils import *
-from cost_utils import *
 from backward_utils import *
 
 
@@ -44,6 +44,36 @@ def L_model_forward(X, parameters):
     caches.append(cache)
 
     return AL, caches
+
+
+def L_model_backward(AL, Y, caches):
+    """
+    implements the backward propagation for L-layer DNN model
+
+    :param AL: probability vector, output of the forward propagation
+    :param Y: true value vector in supervised learning
+    :param caches: list of caches for linear & activation processes in forward propagation
+
+    :return grads:
+    """
+
+    grads = {}
+    L = len(caches)
+
+    # output layer with sigmoid function
+    dAL = - (np.divide(Y, AL) - np.divide(1-Y, 1-AL))
+
+    grads["dA" + str(L-1)], grads["dW" + str(L)], grads["db" + str(L)] = \
+        linear_activation_backward(dAL, caches[L-1], SIGMOID)
+
+    # hidden layers in reversed iteration
+    for l in reversed(range(0, L-1)):
+        dA_prev, dW, db = linear_activation_backward(grads["dA" + str(l+1)], caches[l], RELU)
+        grads["dA" + str(l)] = dA_prev
+        grads["dW" + str(l + 1)] = dW
+        grads["db" + str(l + 1)] = db
+
+    return grads
 
 
 def L_layer_model(X, Y, layers_dims,

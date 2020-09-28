@@ -51,6 +51,21 @@ def linear_activation_forward(A_prev, W, b, activation):
         Z, linear_cache = linear_forward(A_prev, W, b)
         A, activation_cache = sigmoid(Z)
 
+    elif activation == TANH:
+        Z, linear_cache = linear_forward(A_prev, W, b)
+        A, activation_cache = tanh(Z)
+
+    elif activation == RESUBLU:
+        Z, linear_cache = linear_forward(A_prev, W, b)
+        A, activation_cache = resublu(Z)
+
+    elif activation == HYBRID_RELU_1RESUBLU:
+        Z, linear_cache = linear_forward(A_prev, W, b)
+        A, activation_cache = relu(Z[:-1, :])
+        AL, activation_cache_l = resublu(Z[-1, :].reshape(1,Z.shape[1]))
+        A = np.append(A, AL, axis=0)
+        activation_cache = {"Z": np.append(activation_cache["Z"], activation_cache_l["Z"], axis=0)}
+
     else:
         print("ERROR:: " + activation + " function is currently not supported !!")
         exit(1)
@@ -61,43 +76,3 @@ def linear_activation_forward(A_prev, W, b, activation):
              "activation": activation_cache}
 
     return A, cache
-
-
-def L_model_forward(X, parameters):
-    """
-    implements the forward propagation of a neural network
-
-    :param X: input data samples, any size of numpy matrix (n_x, num_samples)
-    :param parameters:
-    Wl -- weight matrix of l-th layer (layer_dims[l], layer_dims[l-1)
-    bl -- bias matrix of l-th layer (layer_dims[l], 1)
-
-    :return AL: result of the (L-1)-th layer, or output layer, numpy array (n_y, num_samples)
-    :return caches: list of caches for each layer calculation
-    """
-
-    # init
-    caches = []
-    A = X
-    L = len(parameters) // 2
-
-    # iterations
-    for l in range(1, L): # L-1 hidden layers with ReLU activation
-        A_prev = A
-        A, cache = linear_activation_forward(A_prev,
-                                  parameters["W" + str(l)],
-                                  parameters["b" + str(l)],
-                                  RELU)
-
-        caches.append(cache)
-
-    # output layer with a sigmoid activation
-    AL, cache = linear_activation_forward(A,
-                                  parameters["W" + str(L)],
-                                  parameters["b" + str(L)],
-                                  SIGMOID)
-
-    assert (AL.shape == (parameters["W" + str(L)].shape[0], X.shape[1]))
-    caches.append(cache)
-
-    return AL, caches
